@@ -22,7 +22,7 @@
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "config": {
-    "mocha": "--compilers js:babel-core/register ./test/**/*.js",
+    "mocha": "--compilers js:babel-core/register ./test/index.js ./test/clearConsole.js",
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
