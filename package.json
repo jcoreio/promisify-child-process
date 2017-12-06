@@ -1,7 +1,7 @@
 {
-  "name": "es2015-library-skeleton",
+  "name": "promisify-child-process",
   "version": "0.0.0-development",
-  "description": "my personal ES2015 library project skeleton",
+  "description": "seriously like the best async child process library",
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint src test",
@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jedwards1211/es2015-library-skeleton.git"
+    "url": "https://github.com/jcoreio/promisify-child-process.git"
   },
   "keywords": [
     "es2015"
@@ -47,9 +47,9 @@
   "author": "Andy Edwards",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jedwards1211/es2015-library-skeleton/issues"
+    "url": "https://github.com/jcoreio/promisify-child-process/issues"
   },
-  "homepage": "https://github.com/jedwards1211/es2015-library-skeleton#readme",
+  "homepage": "https://github.com/jcoreio/promisify-child-process#readme",
   "devDependencies": {
     "@jedwards1211/eslint-config": "^1.0.0",
     "@jedwards1211/eslint-config-flow": "^1.0.0",
