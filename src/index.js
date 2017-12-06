@@ -75,7 +75,7 @@ function promisifyExecMethod(method: any): any {
         }
       })
     })
-    return (Object.create(child, {
+    return (Object.create((child: any), {
       then: { value: _promise.then.bind(_promise) },
       catch: { value: _promise.catch.bind(_promise) },
     }): any)
