@@ -108,7 +108,7 @@ describe('exec', function () {
     expect(stderr.toString('utf8')).to.equal('world')
   })
   // for some reason, the following doesn't work on Travis CI :(
-  if (process.env.CI) {
+  if (!process.env.CI) {
     it('rejects with signal', async () => {
       let error
       const child = exec(`node ${require.resolve('./rejectsWithSignal')}`)
