@@ -77,7 +77,7 @@
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",
     "rimraf": "^2.6.0",
-    "semantic-release": "^6.3.6",
+    "semantic-release": "^8.2.0",
     "validate-commit-msg": "^2.11.1"
   }
 }

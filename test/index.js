@@ -26,10 +26,12 @@ describe('spawn', function () {
   it('rejects with signal', async () => {
     let error
     const child = spawn('node', [require.resolve('./rejectsWithSignal')])
-    await new Promise(resolve => setTimeout(() => {
-      process.kill(child.pid, 'SIGINT')
-      resolve()
-    }, 1000))
+    let gotStdout, gotStderr
+    function killWhenReady() {
+      if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
+    }
+    child.stdout.on('data', () => {gotStdout = true; killWhenReady()})
+    child.stderr.on('data', () => {gotStderr = true; killWhenReady()})
     await child.catch(err => error = err)
     if (error == null) throw new Error('missing error')
     const {signal, message, stdout, stderr} = error
@@ -67,10 +69,12 @@ describe('fork', function () {
   it('rejects with signal', async () => {
     let error
     const child = fork(require.resolve('./rejectsWithSignal'), {silent: true})
-    await new Promise(resolve => setTimeout(() => {
-      process.kill(child.pid, 'SIGINT')
-      resolve()
-    }, 1000))
+    let gotStdout, gotStderr
+    function killWhenReady() {
+      if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
+    }
+    child.stdout.on('data', () => {gotStdout = true; killWhenReady()})
+    child.stderr.on('data', () => {gotStderr = true; killWhenReady()})
     await child.catch(err => error = err)
     if (error == null) throw new Error('missing error')
     const {signal, message, stdout, stderr} = error
@@ -106,10 +110,12 @@ describe('exec', function () {
   it('rejects with signal', async () => {
     let error
     const child = exec(`node ${require.resolve('./rejectsWithSignal')}`)
-    await new Promise(resolve => setTimeout(() => {
-      process.kill(child.pid, 'SIGINT')
-      resolve()
-    }, 1000))
+    let gotStdout, gotStderr
+    function killWhenReady() {
+      if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
+    }
+    child.stdout.on('data', () => {gotStdout = true; killWhenReady()})
+    child.stderr.on('data', () => {gotStderr = true; killWhenReady()})
     await child.catch(err => error = err)
     if (error == null) throw new Error('missing error')
     const {signal, stdout, stderr} = error
@@ -140,10 +146,12 @@ describe('execFile', function () {
   it('rejects with signal', async () => {
     let error
     const child = execFile(require.resolve('./rejectsWithSignal'))
-    await new Promise(resolve => setTimeout(() => {
-      process.kill(child.pid, 'SIGINT')
-      resolve()
-    }, 1000))
+    let gotStdout, gotStderr
+    function killWhenReady() {
+      if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
+    }
+    child.stdout.on('data', () => {gotStdout = true; killWhenReady()})
+    child.stderr.on('data', () => {gotStderr = true; killWhenReady()})
     await child.catch(err => error = err)
     if (error == null) throw new Error('missing error')
     const {signal, stdout, stderr} = error
