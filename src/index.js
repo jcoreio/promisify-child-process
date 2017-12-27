@@ -15,12 +15,20 @@ type ErrorWithOutput = Error & Output & {
 
 type ChildProcessPromise = ChildProcess & Promise<Output>
 
-export function promisifyChildProcess(child: ChildProcess): ChildProcessPromise {
+export function promisifyChildProcess(child: ChildProcess, options: {encoding?: string} = {}): ChildProcessPromise {
   const _promise = new Promise((resolve: (result: Output) => void, reject: (error: ErrorWithOutput) => void) => {
-    let stdout = (child.stdout && child.stdout.readable) ? Buffer.alloc(0) : null,
+    let stdout, stderr
+    if (options.encoding && options.encoding !== 'buffer') {
+      stdout = (child.stdout && child.stdout.readable) ? '' : null,
+      stderr = (child.stderr && child.stderr.readable) ? '' : null
+      if (stdout != null) child.stdout.on('data', (data) => stdout += data)
+      if (stderr != null) child.stderr.on('data', (data) => stderr += data)
+    } else {
+      stdout = (child.stdout && child.stdout.readable) ? Buffer.alloc(0) : null,
       stderr = (child.stderr && child.stderr.readable) ? Buffer.alloc(0) : null
-    if (stdout != null) child.stdout.on('data', (data) => stdout = Buffer.concat([ (stdout: any), data ]))
-    if (stderr != null) child.stderr.on('data', (data) => stderr = Buffer.concat([ (stderr: any), data ]))
+      if (stdout != null) child.stdout.on('data', (data) => stdout = Buffer.concat([ (stdout: any), data ]))
+      if (stderr != null) child.stderr.on('data', (data) => stderr = Buffer.concat([ (stderr: any), data ]))
+    }
     child.on('error', reject)
     function done(code: ?number, signal: ?string) {
       let error: ?ErrorWithOutput
@@ -50,7 +58,7 @@ export function spawn(
   args?: Array<string> | child_process$spawnOpts,
   options?: child_process$spawnOpts
 ): ChildProcessPromise {
-  return promisifyChildProcess(child_process.spawn(command, args, options))
+  return promisifyChildProcess(child_process.spawn(command, args, options), ((Array.isArray(args) ? options : args): any))
 }
 
 export function fork(
@@ -58,7 +66,7 @@ export function fork(
   args?: Array<string> | child_process$forkOpts,
   options?: child_process$forkOpts
 ): ChildProcessPromise {
-  return promisifyChildProcess(child_process.fork(module, args, options))
+  return promisifyChildProcess(child_process.fork(module, args, options), ((Array.isArray(args) ? options : args): any))
 }
 
 function promisifyExecMethod(method: any): any {

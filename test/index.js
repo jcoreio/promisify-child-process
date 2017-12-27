@@ -13,6 +13,12 @@ describe('spawn', function () {
     expect(stdout.toString('utf8')).to.equal('hello')
     expect(stderr.toString('utf8')).to.equal('world')
   })
+  it('resolves with process output as string when encoding is not buffer', async () => {
+    const {stdout, stderr} = await spawn('node', [require.resolve('./resolvesWithProcessOutput')], {encoding: 'utf8'})
+    if (stdout == null || stderr == null) throw new Error('missing output')
+    expect(stdout).to.equal('hello')
+    expect(stderr).to.equal('world')
+  })
   it('rejects with exit code', async () => {
     let error
     await spawn('node', [require.resolve('./rejectsWithExitCode')]).catch(err => error = err)
@@ -45,6 +51,11 @@ describe('spawn', function () {
     expect(stdout).not.to.exist
     expect(stderr).not.to.exist
   })
+  it('works with stdio: inherit and encoding: utf8', async () => {
+    const {stdout, stderr} = await spawn('node', [require.resolve('./resolvesWithProcessOutput')], {stdio: 'inherit'})
+    expect(stdout).not.to.exist
+    expect(stderr).not.to.exist
+  })
 })
 
 describe('fork', function () {
@@ -55,6 +66,12 @@ describe('fork', function () {
     if (stdout == null || stderr == null) throw new Error('missing output')
     expect(stdout.toString('utf8')).to.equal('hello')
     expect(stderr.toString('utf8')).to.equal('world')
+  })
+  it('resolves with process output as string when encoding is not buffer', async () => {
+    const {stdout, stderr} = await fork(require.resolve('./resolvesWithProcessOutput'), {silent: true, encoding: 'utf8'})
+    if (stdout == null || stderr == null) throw new Error('missing output')
+    expect(stdout).to.equal('hello')
+    expect(stderr).to.equal('world')
   })
   it('rejects with exit code', async () => {
     let error
@@ -85,6 +102,11 @@ describe('fork', function () {
   })
   it('works without silent: true', async () => {
     const {stdout, stderr} = await fork(require.resolve('./resolvesWithProcessOutput'))
+    expect(stdout).not.to.exist
+    expect(stderr).not.to.exist
+  })
+  it('works without silent: true and encoding: utf8', async () => {
+    const {stdout, stderr} = await fork(require.resolve('./resolvesWithProcessOutput'), {encoding: 'utf8'})
     expect(stdout).not.to.exist
     expect(stderr).not.to.exist
   })
