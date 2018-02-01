@@ -71,7 +71,7 @@ export function fork(
 
 function promisifyExecMethod(method: any): any {
   return (...args: Array<any>): ChildProcessPromise => {
-    let child: ChildProcess
+    let child: ?ChildProcess
     const _promise = new Promise((resolve: (output: Output) => void, reject: (error: ErrorWithOutput) => void) => {
       child = method(...args, (err: ?ErrorWithOutput, stdout: ?(Buffer | string), stderr: ?(Buffer | string)) => {
         if (err) {
@@ -83,6 +83,7 @@ function promisifyExecMethod(method: any): any {
         }
       })
     })
+    if (!child) throw new Error("unexpected error: child has not been initialized")
     return (Object.create((child: any), {
       then: { value: _promise.then.bind(_promise) },
       catch: { value: _promise.catch.bind(_promise) },
