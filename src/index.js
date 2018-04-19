@@ -19,13 +19,13 @@ export function promisifyChildProcess(child: ChildProcess, options: {encoding?: 
   const _promise = new Promise((resolve: (result: Output) => void, reject: (error: ErrorWithOutput) => void) => {
     let stdout, stderr
     if (options.encoding && options.encoding !== 'buffer') {
-      stdout = (child.stdout && child.stdout.readable) ? '' : null,
-      stderr = (child.stderr && child.stderr.readable) ? '' : null
+      stdout = child.stdout ? '' : null,
+      stderr = child.stderr ? '' : null
       if (stdout != null) child.stdout.on('data', (data) => stdout += data)
       if (stderr != null) child.stderr.on('data', (data) => stderr += data)
     } else {
-      stdout = (child.stdout && child.stdout.readable) ? Buffer.alloc(0) : null,
-      stderr = (child.stderr && child.stderr.readable) ? Buffer.alloc(0) : null
+      stdout = child.stdout ? Buffer.alloc(0) : null,
+      stderr = child.stderr ? Buffer.alloc(0) : null
       if (stdout != null) child.stdout.on('data', (data) => stdout = Buffer.concat([ (stdout: any), data ]))
       if (stderr != null) child.stderr.on('data', (data) => stderr = Buffer.concat([ (stderr: any), data ]))
     }
