@@ -1,9 +1,0 @@
-{
-  "presets": ["es2015", "stage-1", "flow"],
-  "plugins": ["transform-runtime"],
-  "env": {
-    "test": {
-      "plugins": ["istanbul"]
-    }
-  }
-}

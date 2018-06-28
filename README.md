@@ -16,11 +16,14 @@ return a `Promise`. So when you call `exec(...)` we still return a
 `ChildProcess` instance, just with `.then()` and `.catch()` added to
 make it promise-friendly.
 
-## Install
+## Install and Set-up
 
 ```sh
 npm install --save promisify-child-process
 ```
+
+If you are using a old version of Node without build-in `Promise`s or
+`Object.create`, you will need to use polyfills.
 
 ## Usage
 

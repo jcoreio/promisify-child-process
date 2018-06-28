@@ -1,0 +1,22 @@
+{
+  "presets": [
+    "flow"
+  ],
+  "env": {
+    "es5": {
+      "presets": [
+        ["env", {"forceAllTransforms": true}],
+        "flow"
+      ],
+    },
+    "coverage": {
+      "presets": [
+        ["env", {"targets": {"node": "current"}}],
+        "flow"
+      ],
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  }
+}
