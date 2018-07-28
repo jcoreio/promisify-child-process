@@ -54,7 +54,7 @@ async function() {
 async function() {
   const { stdout, stderr } = await exec('ls -al');
   // OR:
-  const child = await exec('ls -al', {});
+  const child = exec('ls -al', {});
   // do whatever you want with `child` here - it's a ChildProcess instance just
   // with promise-friendly `.then()` & `.catch()` functions added to it!
   child.stdin.write(...);
