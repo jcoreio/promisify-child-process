@@ -15,33 +15,36 @@ type ErrorWithOutput = Error & Output & {
 
 type ChildProcessPromise = ChildProcess & Promise<Output>
 
+function joinChunks<T: string | Buffer>(chunks: Array<T>, encoding: string): T {
+  if (chunks[0] instanceof Buffer) {
+    const buffer = Buffer.concat(chunks)
+    if (encoding) return buffer.toString(encoding)
+    return buffer
+  }
+  return chunks.join('')
+}
+
 export function promisifyChildProcess(child: ChildProcess, options: {encoding?: string} = {}): ChildProcessPromise {
   const _promise = new Promise((resolve: (result: Output) => void, reject: (error: ErrorWithOutput) => void) => {
-    let stdout, stderr
-    if (options.encoding && options.encoding !== 'buffer') {
-      stdout = child.stdout ? '' : null,
-      stderr = child.stderr ? '' : null
-      if (stdout != null) child.stdout.on('data', (data) => stdout += data)
-      if (stderr != null) child.stderr.on('data', (data) => stderr += data)
-    } else {
-      stdout = child.stdout ? Buffer.alloc(0) : null,
-      stderr = child.stderr ? Buffer.alloc(0) : null
-      if (stdout != null) child.stdout.on('data', (data) => stdout = Buffer.concat([ (stdout: any), data ]))
-      if (stderr != null) child.stderr.on('data', (data) => stderr = Buffer.concat([ (stderr: any), data ]))
-    }
+    const stdoutChunks = []
+    const stderrChunks = []
+    if (child.stdout) child.stdout.on('data', data => stdoutChunks.push(data))
+    if (child.stderr) child.stderr.on('data', data => stderrChunks.push(data))
+
     child.on('error', reject)
     function done(code: ?number, signal: ?string) {
       let error: ?ErrorWithOutput
       if (code != null && code !== 0) error = new Error(`Process exited with code ${code}`)
       else if (signal != null) error = new Error(`Process was killed with ${signal}`)
+      const output: Output = {}
+      if (child.stdout) output.stdout = joinChunks(stdoutChunks, options.encoding)
+      if (child.stderr) output.stderr = joinChunks(stderrChunks, options.encoding)
       if (error) {
         if (code != null) error.code = code
         if (signal != null) error.signal = signal
-        error.stdout = stdout
-        error.stderr = stderr
-        reject(error)
+        reject(Object.assign(error, output))
       } else {
-        resolve({stdout, stderr})
+        resolve(output)
       }
     }
     child.on('close', done)
@@ -101,4 +104,3 @@ export const execFile: (
   args?: Array<string> | child_process$execFileOpts,
   options?: child_process$execOpts
 ) => ChildProcessPromise = promisifyExecMethod(child_process.execFile)
-
