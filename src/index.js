@@ -15,10 +15,10 @@ type ErrorWithOutput = Error & Output & {
 
 type ChildProcessPromise = ChildProcess & Promise<Output>
 
-function joinChunks<T: string | Buffer>(chunks: Array<T>, encoding: string): T {
+function joinChunks(chunks: $ReadOnlyArray<string | Buffer>, encoding: ?string): string | Buffer {
   if (chunks[0] instanceof Buffer) {
-    const buffer = Buffer.concat(chunks)
-    if (encoding) return buffer.toString(encoding)
+    const buffer = Buffer.concat((chunks: any))
+    if (encoding) return buffer.toString((encoding: any))
     return buffer
   }
   return chunks.join('')
@@ -26,8 +26,8 @@ function joinChunks<T: string | Buffer>(chunks: Array<T>, encoding: string): T {
 
 export function promisifyChildProcess(child: ChildProcess, options: {encoding?: string} = {}): ChildProcessPromise {
   const _promise = new Promise((resolve: (result: Output) => void, reject: (error: ErrorWithOutput) => void) => {
-    const stdoutChunks = []
-    const stderrChunks = []
+    const stdoutChunks: Array<string | Buffer> = []
+    const stderrChunks: Array<string | Buffer> = []
     if (child.stdout) child.stdout.on('data', data => stdoutChunks.push(data))
     if (child.stderr) child.stderr.on('data', data => stderrChunks.push(data))
 
@@ -42,7 +42,8 @@ export function promisifyChildProcess(child: ChildProcess, options: {encoding?: 
       if (error) {
         if (code != null) error.code = code
         if (signal != null) error.signal = signal
-        reject(Object.assign(error, output))
+        Object.assign(error, output)
+        reject(error)
       } else {
         resolve(output)
       }
