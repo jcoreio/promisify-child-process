@@ -42,7 +42,8 @@ export function promisifyChildProcess(child: ChildProcess, options: {encoding?: 
       if (error) {
         if (code != null) error.code = code
         if (signal != null) error.signal = signal
-        Object.assign(error, output)
+        if (output.stdout) error.stdout = output.stdout
+        if (output.stderr) error.stderr = output.stderr
         reject(error)
       } else {
         resolve(output)
