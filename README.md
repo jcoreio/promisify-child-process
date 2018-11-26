@@ -26,7 +26,7 @@ npm install --save promisify-child-process
 If you are using a old version of Node without build-in `Promise`s or
 `Object.create`, you will need to use polyfills.
 
-## Upgrading to v2
+## Upgrading to v3
 
 You must now pass `maxBuffer` or `encoding` to `spawn`/`fork` if you want to
 capture `stdout` or `stderr`.
