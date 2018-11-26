@@ -1,45 +1,53 @@
 // @flow
 
 import { spawn, fork, exec, execFile } from '../src'
-import { describe, it, before } from 'mocha'
+import { describe, it, before, after } from 'mocha'
 import { expect } from 'chai'
 import path from 'path'
 import fs from 'fs-extra'
 
-describe('spawn', function() {
-  this.timeout(30000)
-
-  before(async () =>
-    Promise.all([
-      fs.writeFile(
-        path.resolve(__dirname, 'resolvesWithProcessOutput.js'),
-        `#!${process.execPath}
+before(() =>
+  Promise.all([
+    fs.writeFile(
+      path.resolve(__dirname, 'resolvesWithProcessOutput.js'),
+      `#!${process.execPath}
 process.stdout.write('hello')
 process.stderr.write('world')
       `,
-        { encoding: 'utf8', mode: 0o755 }
-      ),
-      fs.writeFile(
-        path.resolve(__dirname, 'rejectsWithExitCode.js'),
-        `#!${process.execPath}
+      { encoding: 'utf8', mode: 0o755 }
+    ),
+    fs.writeFile(
+      path.resolve(__dirname, 'rejectsWithExitCode.js'),
+      `#!${process.execPath}
 process.stdout.write('hello')
 process.stderr.write('world')
 process.exit(2)
       `,
-        { encoding: 'utf8', mode: 0o755 }
-      ),
-      fs.writeFile(
-        path.resolve(__dirname, 'rejectsWithSignal.js'),
-        `#!${process.execPath}
+      { encoding: 'utf8', mode: 0o755 }
+    ),
+    fs.writeFile(
+      path.resolve(__dirname, 'rejectsWithSignal.js'),
+      `#!${process.execPath}
 process.stdout.write('hello')
 process.stderr.write('world')
 
 setTimeout(function() {}, 5000)
       `,
-        { encoding: 'utf8', mode: 0o755 }
-      ),
-    ])
-  )
+      { encoding: 'utf8', mode: 0o755 }
+    ),
+  ])
+)
+
+after(() =>
+  Promise.all([
+    fs.unlink(path.resolve(__dirname, 'resolvesWithProcessOutput.js')),
+    fs.unlink(path.resolve(__dirname, 'rejectsWithExitCode.js')),
+    fs.unlink(path.resolve(__dirname, 'rejectsWithSignal.js')),
+  ])
+)
+
+describe('spawn', function() {
+  this.timeout(30000)
 
   it('resolves with process output', async () => {
     const { stdout, stderr } = await spawn(

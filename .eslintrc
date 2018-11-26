@@ -4,7 +4,9 @@
     "es6": true
   },
   "extends": [
-    "@jedwards1211/eslint-config","@jedwards1211/eslint-config-flow", "eslint-config-prettier"
+    "@jedwards1211/eslint-config",
+    "@jedwards1211/eslint-config-flow",
+    "eslint-config-prettier"
   ],
   "parser": "babel-eslint",
   "parserOptions": {
