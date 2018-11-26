@@ -1,7 +1,7 @@
 // @flow
 
 import type { ChildProcess } from 'child_process'
-import child_process from 'child_process'
+const child_process = require('child_process')
 
 type Output = {
   stdout: ?(string | Buffer),
@@ -29,7 +29,7 @@ function joinChunks(
   return chunks.join('')
 }
 
-export function promisifyChildProcess(
+function promisifyChildProcess(
   child: ChildProcess,
   options: {
     encoding?: $PropertyType<child_process$spawnSyncOpts, 'encoding'>,
@@ -137,7 +137,7 @@ export function promisifyChildProcess(
   }): any)
 }
 
-export function spawn(
+function spawn(
   command: string,
   args?: Array<string> | child_process$spawnOpts,
   options?: child_process$spawnOpts & {
@@ -152,7 +152,7 @@ export function spawn(
   )
 }
 
-export function fork(
+function fork(
   module: string,
   args?: Array<string> | child_process$forkOpts,
   options?: child_process$forkOpts & {
@@ -203,13 +203,15 @@ function promisifyExecMethod(method: any): any {
   }
 }
 
-export const exec: (
+const exec: (
   command: string,
   options?: child_process$execOpts
 ) => ChildProcessPromise = promisifyExecMethod(child_process.exec)
 
-export const execFile: (
+const execFile: (
   file: string,
   args?: Array<string> | child_process$execFileOpts,
   options?: child_process$execOpts
 ) => ChildProcessPromise = promisifyExecMethod(child_process.execFile)
+
+module.exports = { ...child_process, spawn, fork, exec, execFile }

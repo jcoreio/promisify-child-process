@@ -1,11 +1,45 @@
 // @flow
 
 import { spawn, fork, exec, execFile } from '../src'
-import { describe, it } from 'mocha'
+import { describe, it, before } from 'mocha'
 import { expect } from 'chai'
+import path from 'path'
+import fs from 'fs-extra'
 
 describe('spawn', function() {
   this.timeout(30000)
+
+  before(async () =>
+    Promise.all([
+      fs.writeFile(
+        path.resolve(__dirname, 'resolvesWithProcessOutput.js'),
+        `#!${process.execPath}
+process.stdout.write('hello')
+process.stderr.write('world')
+      `,
+        { encoding: 'utf8', mode: 0o755 }
+      ),
+      fs.writeFile(
+        path.resolve(__dirname, 'rejectsWithExitCode.js'),
+        `#!${process.execPath}
+process.stdout.write('hello')
+process.stderr.write('world')
+process.exit(2)
+      `,
+        { encoding: 'utf8', mode: 0o755 }
+      ),
+      fs.writeFile(
+        path.resolve(__dirname, 'rejectsWithSignal.js'),
+        `#!${process.execPath}
+process.stdout.write('hello')
+process.stderr.write('world')
+
+setTimeout(function() {}, 5000)
+      `,
+        { encoding: 'utf8', mode: 0o755 }
+      ),
+    ])
+  )
 
   it('resolves with process output', async () => {
     const { stdout, stderr } = await spawn(
