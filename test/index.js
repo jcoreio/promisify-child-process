@@ -8,9 +8,11 @@ describe('spawn', function() {
   this.timeout(30000)
 
   it('resolves with process output', async () => {
-    const { stdout, stderr } = await spawn(process.execPath, [
-      require.resolve('./resolvesWithProcessOutput'),
-    ])
+    const { stdout, stderr } = await spawn(
+      process.execPath,
+      [require.resolve('./resolvesWithProcessOutput')],
+      { maxBuffer: 200 * 1024 }
+    )
     if (stdout == null || stderr == null) throw new Error('missing output')
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
@@ -18,6 +20,26 @@ describe('spawn', function() {
       throw new Error('expected stderr to be a buffer')
     expect(stdout.toString('utf8')).to.equal('hello')
     expect(stderr.toString('utf8')).to.equal('world')
+  })
+  it(`doesn't capture output when neither encoding nor maxBuffer is given`, async () => {
+    const { stdout, stderr } = await spawn(process.execPath, [
+      require.resolve('./resolvesWithProcessOutput'),
+    ])
+    expect()
+    expect(stdout).not.to.exist
+    expect(stderr).not.to.exist
+  })
+  it(`kills child when maxBuffer is exceeded`, async () => {
+    let error
+    await spawn(
+      process.execPath,
+      [require.resolve('./resolvesWithProcessOutput')],
+      { maxBuffer: 1 }
+    ).catch(err => (error = err))
+    if (error == null) throw new Error('missing error')
+    const { stdout, stderr } = error
+    expect(stdout.toString('utf8')).to.equal('h')
+    expect(stderr.toString('utf8')).to.equal('')
   })
   it('resolves with process output as string when encoding is not buffer', async () => {
     const { stdout, stderr } = await spawn(
@@ -31,9 +53,9 @@ describe('spawn', function() {
   })
   it('rejects with exit code', async () => {
     let error
-    await spawn(process.execPath, [
-      require.resolve('./rejectsWithExitCode'),
-    ]).catch(err => (error = err))
+    await spawn(process.execPath, [require.resolve('./rejectsWithExitCode')], {
+      maxBuffer: 200 * 1024,
+    }).catch(err => (error = err))
     if (error == null) throw new Error('missing error')
     const { code, message, stdout, stderr } = error
     expect(message).to.equal('Process exited with code 2')
@@ -47,12 +69,16 @@ describe('spawn', function() {
   })
   it('rejects with signal', async () => {
     let error
-    const child = spawn(process.execPath, [
-      require.resolve('./rejectsWithSignal'),
-    ])
+    const child = spawn(
+      process.execPath,
+      [require.resolve('./rejectsWithSignal')],
+      {
+        maxBuffer: 200 * 1024,
+      }
+    )
     let gotStdout, gotStderr
     function killWhenReady() {
-      if (gotStdout && gotStderr) spawn('kill', ['-s', 'SIGINT', child.pid])
+      if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
     }
     child.stdout.on('data', () => {
       gotStdout = true
@@ -83,15 +109,6 @@ describe('spawn', function() {
     expect(stdout).not.to.exist
     expect(stderr).not.to.exist
   })
-  it('works with stdio: inherit and encoding: utf8', async () => {
-    const { stdout, stderr } = await spawn(
-      'node',
-      [require.resolve('./resolvesWithProcessOutput')],
-      { stdio: 'inherit' }
-    )
-    expect(stdout).not.to.exist
-    expect(stderr).not.to.exist
-  })
 })
 
 describe('fork', function() {
@@ -100,7 +117,7 @@ describe('fork', function() {
   it('resolves with process output', async () => {
     const { stdout, stderr } = await fork(
       require.resolve('./resolvesWithProcessOutput'),
-      { silent: true }
+      { silent: true, maxBuffer: 200 * 1024 }
     )
     if (stdout == null || stderr == null) throw new Error('missing output')
     if (!(stdout instanceof Buffer))
@@ -109,6 +126,25 @@ describe('fork', function() {
       throw new Error('expected stderr to be a buffer')
     expect(stdout.toString('utf8')).to.equal('hello')
     expect(stderr.toString('utf8')).to.equal('world')
+  })
+  it(`doesn't capture output if neither encoding nor maxBuffer is given`, async function(): Promise<void> {
+    const { stdout, stderr } = await fork(
+      require.resolve('./resolvesWithProcessOutput'),
+      { silent: true }
+    )
+    expect(stdout).not.to.exist
+    expect(stderr).not.to.exist
+  })
+  it(`kills child when maxBuffer is exceeded`, async () => {
+    let error
+    await fork(require.resolve('./resolvesWithProcessOutput'), {
+      silent: true,
+      maxBuffer: 1,
+    }).catch(err => (error = err))
+    if (error == null) throw new Error('missing error')
+    const { stdout, stderr } = error
+    expect(stdout.toString('utf8')).to.equal('h')
+    expect(stderr.toString('utf8')).to.equal('')
   })
   it('resolves with process output as string when encoding is not buffer', async () => {
     const { stdout, stderr } = await fork(
@@ -123,6 +159,7 @@ describe('fork', function() {
     let error
     await fork(require.resolve('./rejectsWithExitCode'), {
       silent: true,
+      maxBuffer: 200 * 1024,
     }).catch(err => (error = err))
     if (error == null) throw new Error('missing error')
     const { code, message, stdout, stderr } = error
@@ -137,7 +174,10 @@ describe('fork', function() {
   })
   it('rejects with signal', async () => {
     let error
-    const child = fork(require.resolve('./rejectsWithSignal'), { silent: true })
+    const child = fork(require.resolve('./rejectsWithSignal'), {
+      silent: true,
+      maxBuffer: 200 * 1024,
+    })
     let gotStdout, gotStderr
     function killWhenReady() {
       if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
@@ -165,14 +205,6 @@ describe('fork', function() {
   it('works without silent: true', async () => {
     const { stdout, stderr } = await fork(
       require.resolve('./resolvesWithProcessOutput')
-    )
-    expect(stdout).not.to.exist
-    expect(stderr).not.to.exist
-  })
-  it('works without silent: true and encoding: utf8', async () => {
-    const { stdout, stderr } = await fork(
-      require.resolve('./resolvesWithProcessOutput'),
-      { encoding: 'utf8' }
     )
     expect(stdout).not.to.exist
     expect(stderr).not.to.exist
