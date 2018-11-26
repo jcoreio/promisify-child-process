@@ -8,7 +8,7 @@ describe('spawn', function() {
   this.timeout(30000)
 
   it('resolves with process output', async () => {
-    const { stdout, stderr } = await spawn('node', [
+    const { stdout, stderr } = await spawn(process.execPath, [
       require.resolve('./resolvesWithProcessOutput'),
     ])
     if (stdout == null || stderr == null) throw new Error('missing output')
@@ -31,9 +31,9 @@ describe('spawn', function() {
   })
   it('rejects with exit code', async () => {
     let error
-    await spawn('node', [require.resolve('./rejectsWithExitCode')]).catch(
-      err => (error = err)
-    )
+    await spawn(process.execPath, [
+      require.resolve('./rejectsWithExitCode'),
+    ]).catch(err => (error = err))
     if (error == null) throw new Error('missing error')
     const { code, message, stdout, stderr } = error
     expect(message).to.equal('Process exited with code 2')
@@ -47,10 +47,12 @@ describe('spawn', function() {
   })
   it('rejects with signal', async () => {
     let error
-    const child = spawn('node', [require.resolve('./rejectsWithSignal')])
+    const child = spawn(process.execPath, [
+      require.resolve('./rejectsWithSignal'),
+    ])
     let gotStdout, gotStderr
     function killWhenReady() {
-      if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
+      if (gotStdout && gotStderr) spawn('kill', ['-s', 'SIGINT', child.pid])
     }
     child.stdout.on('data', () => {
       gotStdout = true
@@ -181,7 +183,7 @@ describe('exec', function() {
 
   it('resolves with process output', async () => {
     const { stdout, stderr } = await exec(
-      `node ${require.resolve('./resolvesWithProcessOutput')}`
+      `${process.execPath} ${require.resolve('./resolvesWithProcessOutput')}`
     )
     if (stdout == null || stderr == null) throw new Error('missing output')
     expect(stdout).to.equal('hello')
@@ -189,40 +191,39 @@ describe('exec', function() {
   })
   it('rejects with exit code', async () => {
     let error
-    await exec(`node ${require.resolve('./rejectsWithExitCode')}`).catch(
-      err => (error = err)
-    )
+    await exec(
+      `${process.execPath} ${require.resolve('./rejectsWithExitCode')}`
+    ).catch(err => (error = err))
     if (error == null) throw new Error('missing error')
     const { code, stdout, stderr } = error
     expect(code).to.equal(2)
     expect(stdout).to.equal('hello')
     expect(stderr).to.equal('world')
   })
-  // for some reason, the following doesn't work on Travis CI :(
-  if (!process.env.CI) {
-    it('rejects with signal', async () => {
-      let error
-      const child = exec(`node ${require.resolve('./rejectsWithSignal')}`)
-      let gotStdout, gotStderr
-      function killWhenReady() {
-        if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
-      }
-      child.stdout.on('data', () => {
-        gotStdout = true
-        killWhenReady()
-      })
-      child.stderr.on('data', () => {
-        gotStderr = true
-        killWhenReady()
-      })
-      await child.catch(err => (error = err))
-      if (error == null) throw new Error('missing error')
-      const { signal, stdout, stderr } = error
-      expect(signal).to.equal('SIGINT')
-      expect(stdout).to.equal('hello')
-      expect(stderr).to.equal('world')
+  it('rejects with signal', async () => {
+    let error
+    const child = exec(
+      `${process.execPath} ${require.resolve('./rejectsWithSignal')}`
+    )
+    let gotStdout, gotStderr
+    function killWhenReady() {
+      if (gotStdout && gotStderr) process.kill(child.pid, 'SIGINT')
+    }
+    child.stdout.on('data', () => {
+      gotStdout = true
+      killWhenReady()
     })
-  }
+    child.stderr.on('data', () => {
+      gotStderr = true
+      killWhenReady()
+    })
+    await child.catch(err => (error = err))
+    if (error == null) throw new Error('missing error')
+    const { signal, stdout, stderr } = error
+    expect(signal).to.equal('SIGINT')
+    expect(stdout).to.equal('hello')
+    expect(stderr).to.equal('world')
+  })
 })
 
 describe('execFile', function() {

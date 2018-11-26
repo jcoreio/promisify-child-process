@@ -1,5 +1,5 @@
-#!/usr/bin/env node
+#!/usr/local/bin/node
 process.stdout.write('hello')
 process.stderr.write('world')
 
-setTimeout(function() {}, 30000)
+setTimeout(function() {}, 5000)
