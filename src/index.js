@@ -3,19 +3,25 @@
 import type { ChildProcess } from 'child_process'
 import child_process from 'child_process'
 
-type Output = {
+export type ChildProcessOutput = {
   stdout: ?(string | Buffer),
   stderr: ?(string | Buffer),
 }
 
-type ErrorWithOutput = Error & {
+export type ErrorWithOutput = Error & {
   stdout?: ?(string | Buffer),
   stderr?: ?(string | Buffer),
   code?: ?number,
   signal?: ?string,
 }
 
-type ChildProcessPromise = ChildProcess & Promise<Output>
+export type ChildProcessPromise = ChildProcess & Promise<ChildProcessOutput>
+
+export type PromisifyChildProcessOptions = {
+  encoding?: $PropertyType<child_process$spawnSyncOpts, 'encoding'>,
+  killSignal?: $PropertyType<child_process$spawnSyncOpts, 'killSignal'>,
+  maxBuffer?: $PropertyType<child_process$spawnSyncOpts, 'maxBuffer'>,
+}
 
 function joinChunks(
   chunks: $ReadOnlyArray<string | Buffer>,
@@ -31,15 +37,11 @@ function joinChunks(
 
 export function promisifyChildProcess(
   child: ChildProcess,
-  options: {
-    encoding?: $PropertyType<child_process$spawnSyncOpts, 'encoding'>,
-    killSignal?: $PropertyType<child_process$spawnSyncOpts, 'killSignal'>,
-    maxBuffer?: $PropertyType<child_process$spawnSyncOpts, 'maxBuffer'>,
-  } = {}
+  options: PromisifyChildProcessOptions = {}
 ): ChildProcessPromise {
   const _promise = new Promise(
     (
-      resolve: (result: Output) => void,
+      resolve: (result: ChildProcessOutput) => void,
       reject: (error: ErrorWithOutput) => void
     ) => {
       const { encoding, killSignal } = options
@@ -115,7 +117,7 @@ export function promisifyChildProcess(
             /* eslint-enable no-console */
           }
         }
-        const output: Output = ({}: any)
+        const output: ChildProcessOutput = ({}: any)
         defineOutputs(output)
         const finalError: ?ErrorWithOutput = error
         if (finalError) {
@@ -140,11 +142,7 @@ export function promisifyChildProcess(
 export function spawn(
   command: string,
   args?: Array<string> | child_process$spawnOpts,
-  options?: child_process$spawnOpts & {
-    encoding?: $PropertyType<child_process$spawnSyncOpts, 'encoding'>,
-    killSignal?: $PropertyType<child_process$spawnSyncOpts, 'killSignal'>,
-    maxBuffer?: $PropertyType<child_process$spawnSyncOpts, 'maxBuffer'>,
-  }
+  options?: child_process$spawnOpts & PromisifyChildProcessOptions
 ): ChildProcessPromise {
   return promisifyChildProcess(
     child_process.spawn(command, args, options),
@@ -155,11 +153,7 @@ export function spawn(
 export function fork(
   module: string,
   args?: Array<string> | child_process$forkOpts,
-  options?: child_process$forkOpts & {
-    encoding?: $PropertyType<child_process$spawnSyncOpts, 'encoding'>,
-    killSignal?: $PropertyType<child_process$spawnSyncOpts, 'killSignal'>,
-    maxBuffer?: $PropertyType<child_process$spawnSyncOpts, 'maxBuffer'>,
-  }
+  options?: child_process$forkOpts & PromisifyChildProcessOptions
 ): ChildProcessPromise {
   return promisifyChildProcess(
     child_process.fork(module, args, options),
@@ -172,7 +166,7 @@ function promisifyExecMethod(method: any): any {
     let child: ?ChildProcess
     const _promise = new Promise(
       (
-        resolve: (output: Output) => void,
+        resolve: (output: ChildProcessOutput) => void,
         reject: (error: ErrorWithOutput) => void
       ) => {
         child = method(
