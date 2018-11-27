@@ -17,11 +17,16 @@ export type ErrorWithOutput = Error & {
 
 export type ChildProcessPromise = ChildProcess & Promise<ChildProcessOutput>
 
-export type PromisifyChildProcessOptions = {
+type PromisifyChildProcessBaseOpts = {
   encoding?: $PropertyType<child_process$spawnSyncOpts, 'encoding'>,
   killSignal?: $PropertyType<child_process$spawnSyncOpts, 'killSignal'>,
   maxBuffer?: $PropertyType<child_process$spawnSyncOpts, 'maxBuffer'>,
 }
+
+export type PromiseSpawnOpts = child_process$spawnOpts &
+  PromisifyChildProcessBaseOpts
+export type PromiseForkOpts = child_process$forkOpts &
+  PromisifyChildProcessBaseOpts
 
 function joinChunks(
   chunks: $ReadOnlyArray<string | Buffer>,
@@ -37,7 +42,7 @@ function joinChunks(
 
 export function promisifyChildProcess(
   child: ChildProcess,
-  options: PromisifyChildProcessOptions = {}
+  options: PromisifyChildProcessBaseOpts = {}
 ): ChildProcessPromise {
   const _promise = new Promise(
     (
@@ -142,7 +147,7 @@ export function promisifyChildProcess(
 export function spawn(
   command: string,
   args?: Array<string> | child_process$spawnOpts,
-  options?: child_process$spawnOpts & PromisifyChildProcessOptions
+  options?: PromiseSpawnOpts
 ): ChildProcessPromise {
   return promisifyChildProcess(
     child_process.spawn(command, args, options),
@@ -153,7 +158,7 @@ export function spawn(
 export function fork(
   module: string,
   args?: Array<string> | child_process$forkOpts,
-  options?: child_process$forkOpts & PromisifyChildProcessOptions
+  options?: PromiseForkOpts
 ): ChildProcessPromise {
   return promisifyChildProcess(
     child_process.fork(module, args, options),
