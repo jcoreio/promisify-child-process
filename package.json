@@ -92,7 +92,7 @@
     "copy": "^0.3.2",
     "cross-env": "^5.2.0",
     "eslint": "^5.9.0",
-    "eslint-config-prettier": "^3.3.0",
+    "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-flowtype": "^3.2.0",
     "eslint-watch": "^4.0.2",
     "flow-bin": "^0.91.0",
