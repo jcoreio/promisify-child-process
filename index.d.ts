@@ -24,6 +24,10 @@ interface PromisifyChildProcessOptions {
   encoding?: string;
 }
 
+type PromisifySpawnOptions = SpawnOptions & PromisifyChildProcessOptions;
+
+type PromisifyForkOptions = ForkOptions & PromisifyChildProcessOptions;
+
 export function promisifyChildProcess(
   child: ChildProcess,
   options?: PromisifyChildProcessOptions
@@ -32,21 +36,21 @@ export function promisifyChildProcess(
 export function spawn(
   command: string,
   args: Array<string>,
-  options?: SpawnOptions
+  options?: PromisifySpawnOptions
 ): ChildProcessPromise;
 export function spawn(
   command: string,
-  options?: SpawnOptions
+  options?: PromisifySpawnOptions
 ): ChildProcessPromise;
 
 export function fork(
   module: string,
   args: Array<string>,
-  options?: ForkOptions
+  options?: PromisifyForkOptions
 ): ChildProcessPromise;
 export function fork(
   module: string,
-  options?: ForkOptions
+  options?: PromisifyForkOptions
 ): ChildProcessPromise;
 
 export function exec(
