@@ -5,5 +5,5 @@ lib
 es
 .eslintcache
 /*.js
-!commitlint.config.js
 /*.js.flow
+!/.babelrc.js
