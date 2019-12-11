@@ -60,7 +60,18 @@
     "url": "https://github.com/jcoreio/promisify-child-process.git"
   },
   "keywords": [
-    "es2015"
+    "child",
+    "process",
+    "child_process",
+    "exec",
+    "spawn",
+    "execFile",
+    "fork",
+    "promise",
+    "promises",
+    "async",
+    "await",
+    "thenable"
   ],
   "author": "Andy Edwards",
   "license": "MIT",
@@ -85,6 +96,7 @@
     "@jedwards1211/commitlint-config": "^1.0.0",
     "@jedwards1211/eslint-config": "^2.0.0",
     "@jedwards1211/eslint-config-flow": "^1.0.2",
+    "@types/node": "^12.12.17",
     "babel-eslint": "^10.0.1",
     "babel-plugin-istanbul": "^5.1.0",
     "chai": "^4.2.0",

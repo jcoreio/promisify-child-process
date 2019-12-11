@@ -23,15 +23,28 @@ make it promise-friendly.
 npm install --save promisify-child-process
 ```
 
-If you are using a old version of Node without build-in `Promise`s or
-`Object.create`, you will need to use polyfills.
+If you are using a old version of Node without built-in `Promise`s or
+`Object.create`, you will need to use polyfills (e.g. `@babel/polyfill`).
+
+```js
+// OLD:
+const { exec, spawn, fork, execFile } = require('child_process')
+// NEW:
+const { exec, spawn, fork, execFile } = require('promisify-child-process')
+```
 
 ## Upgrading to v3
 
 You must now pass `maxBuffer` or `encoding` to `spawn`/`fork` if you want to
 capture `stdout` or `stderr`.
 
-## Warning: capturing output
+## Resolution/Rejection
+
+The child process promise will only resolve if the process exits with a code of 0.
+If it exits with any other code, is killed by a signal, or emits an `'error'` event,
+the promise will reject.
+
+## Capturing output
 
 `exec` and `execFile` capture `stdout` and `stderr` by default. But `spawn` and
 `fork` don't capture `stdout` and `stderr` unless you pass an `encoding` or
@@ -50,24 +63,28 @@ async function() {
 }
 ```
 
-## Usage
+## Additional properties on rejection errors
 
-```js
-// OLD:
-const { exec, spawn, fork, execFile } = require('child_process')
-// NEW:
-const { exec, spawn, fork, execFile } = require('promisify-child-process')
-```
+If the child process promise rejects, the error may have the following additional
+properties:
+
+- `code` - the process' exit code (if it exited)
+- `signal` - the signal the process was killed with (if it was killed)
+- `stdout` - the captured `stdout` (if output capturing was enabled)
+- `stderr` - the captured `stderr` (if output capturing was enabled)
+
+## Wrapper
 
 If for any reason you need to wrap a `ChildProcess` you didn't create,
 you can use the exported `promisifyChildProcess` function:
 
 ```js
-const {promisifyChildProcess} = require('promisify-child-process');
+const { promisifyChildProcess } = require('promisify-child-process');
 
 async function() {
   const { stdout, stderr } = await promisifyChildProcess(
-    some3rdPartyFunctionThatReturnsChildProcess()
+    some3rdPartyFunctionThatReturnsChildProcess(),
+    { encoding: 'utf8' }
   )
 }
 ```
