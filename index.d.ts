@@ -22,6 +22,8 @@ type ChildProcessPromise = ChildProcess & Promise<Output>
 
 interface PromisifyChildProcessOptions {
   encoding?: string
+  killSignal?: string
+  maxBuffer?: number
 }
 
 type PromisifySpawnOptions = SpawnOptions & PromisifyChildProcessOptions
