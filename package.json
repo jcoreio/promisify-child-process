@@ -2,7 +2,20 @@
   "name": "promisify-child-process",
   "version": "0.0.0-development",
   "description": "seriously like the best async child process library",
-  "main": "index.js",
+  "engines": {
+    "node": ">=8"
+  },
+  "main": "./index.cjs",
+  "exports": {
+    "import": "./index.mjs",
+    "require": "./index.cjs"
+  },
+  "files": [
+    "index.cjs",
+    "index.mjs",
+    "index.d.ts",
+    "index.js.flow"
+  ],
   "sideEffects": false,
   "scripts": {
     "lint": "eslint src test --cache",
@@ -13,13 +26,12 @@
     "flow": "flow",
     "flow:coverage": "for file in src/**.js test/**.js; do echo $file; flow coverage $file; done",
     "flow:watch": "flow-watch -e js,js.flow,flowconfig --ignore es/ --ignore node_modules/ --watch .flowconfig --watch src/ --watch test/",
-    "clean": "rimraf es lib $(cd src; ls) *.js.flow",
-    "build": "npm run clean && babel src --out-dir es && flow-copy-source -v src/ es && cross-env BABEL_ENV=es5 babel src --out-dir . && flow-copy-source -v src/ .",
+    "build": "babel src/index.js -o index.cjs && flow-copy-source -v src/ .",
     "test": "cross-env NODE_ENV=test BABEL_ENV=es5 mocha $npm_package_config_mocha && cross-env NODE_ENV=test BABEL_ENV=coverage nyc --reporter=lcov --reporter=text mocha $npm_package_config_mocha",
     "test:watch": "cross-env NODE_ENV=test BABEL_ENV=test mocha --watch $npm_package_config_mocha",
     "test:debug": "cross-env NODE_ENV=test BABEL_ENV=test mocha --inspect-brk $npm_package_config_mocha",
     "codecov": "nyc report --reporter=text-lcov > coverage.lcov; codecov",
-    "prepublishOnly": "npm run clean && npm run prettier:check && npm run lint && flow && tsc && npm test && npm run build",
+    "prepublishOnly": "npm run prettier:check && npm run lint && flow && tsc && npm test && npm run build",
     "open:coverage": "open coverage/lcov-report/index.html",
     "semantic-release": "semantic-release"
   },
@@ -89,12 +101,7 @@
   "devDependencies": {
     "@babel/cli": "^7.1.5",
     "@babel/core": "^7.1.6",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "@babel/plugin-proposal-export-default-from": "^7.0.0",
-    "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.1.0",
     "@babel/preset-env": "^7.1.6",
     "@babel/preset-flow": "^7.0.0",
     "@babel/register": "^7.0.0",

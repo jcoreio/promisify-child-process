@@ -1,7 +1,7 @@
 // @flow
 
 import type { ChildProcess } from 'child_process'
-import child_process from 'child_process'
+const child_process = require('child_process')
 
 export type ChildProcessOutput = {
   stdout: ?(string | Buffer),
