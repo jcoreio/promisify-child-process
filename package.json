@@ -136,9 +136,7 @@
     "semantic-release": "^15.13.31",
     "typescript": "^3.7.3"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.1.5"
-  },
+  "dependencies": {},
   "renovate": {
     "extends": [
       ":separateMajorReleases",
