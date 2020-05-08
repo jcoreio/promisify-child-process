@@ -137,7 +137,6 @@ export function promisifyChildProcess(
         }
       }
       child.on('close', done)
-      child.on('exit', done)
     }
   )
   return (Object.create(child, {
