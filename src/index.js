@@ -26,6 +26,21 @@ type PromisifyChildProcessBaseOpts = {
 export type SpawnOpts = child_process$spawnOpts & PromisifyChildProcessBaseOpts
 export type ForkOpts = child_process$forkOpts & PromisifyChildProcessBaseOpts
 
+const bindFinally = <T>(promise: Promise<T>) => (
+  handler: () => mixed
+): Promise<T> =>
+  // don't assume we're running in an environment with Promise.finally
+  promise.then(
+    async (value: any): any => {
+      await handler()
+      return value
+    },
+    async (reason: any): any => {
+      await handler()
+      throw reason
+    }
+  )
+
 function joinChunks(
   chunks: $ReadOnlyArray<string | Buffer>,
   encoding: ?string
@@ -139,6 +154,9 @@ export function promisifyChildProcess(
   return (Object.create(child, {
     then: { value: _promise.then.bind(_promise) },
     catch: { value: _promise.catch.bind(_promise) },
+    finally: {
+      value: bindFinally(_promise),
+    },
   }): any)
 }
 
@@ -196,6 +214,7 @@ function promisifyExecMethod(method: any): any {
     return (Object.create((child: any), {
       then: { value: _promise.then.bind(_promise) },
       catch: { value: _promise.catch.bind(_promise) },
+      finally: { value: bindFinally(_promise) },
     }): any)
   }
 }

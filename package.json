@@ -134,7 +134,8 @@
     "prettier-eslint": "^8.8.2",
     "rimraf": "^2.6.0",
     "semantic-release": "^15.13.31",
-    "typescript": "^3.7.3"
+    "typescript": "^3.7.3",
+    "waait": "^1.0.5"
   },
   "dependencies": {},
   "renovate": {

@@ -14,7 +14,7 @@ but more thorough, because that package doesn't seem very actively maintained.
 `promisify-child-process` provides a **drop-in replacement** for the
 original `child_process` functions, not just duplicate methods that
 return a `Promise`. So when you call `exec(...)` we still return a
-`ChildProcess` instance, just with `.then()` and `.catch()` added to
+`ChildProcess` instance, just with `.then()`, `.catch()`, and `.finally()` added to
 make it promise-friendly.
 
 ## Install and Set-up

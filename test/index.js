@@ -5,6 +5,7 @@ import { describe, it, before, after } from 'mocha'
 import { expect } from 'chai'
 import path from 'path'
 import fs from 'fs-extra'
+import delay from 'waait'
 
 before(() =>
   Promise.all([
@@ -50,11 +51,16 @@ describe('spawn', function() {
   this.timeout(30000)
 
   it('resolves with process output', async () => {
+    let finallyDone = false
     const { stdout, stderr } = await spawn(
       process.execPath,
       [require.resolve('./resolvesWithProcessOutput')],
       { maxBuffer: 200 * 1024 }
-    )
+    ).finally(async () => {
+      await delay(50)
+      finallyDone = true
+    })
+    expect(finallyDone, 'finally handler finished').to.be.true
     if (stdout == null || stderr == null) throw new Error('missing output')
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
@@ -94,10 +100,17 @@ describe('spawn', function() {
     expect(stderr).to.equal('world')
   })
   it('rejects with exit code', async () => {
+    let finallyDone = false
     let error
     await spawn(process.execPath, [require.resolve('./rejectsWithExitCode')], {
       maxBuffer: 200 * 1024,
-    }).catch(err => (error = err))
+    })
+      .finally(async () => {
+        await delay(50)
+        finallyDone = true
+      })
+      .catch(err => (error = err))
+    expect(finallyDone, 'finally handler finished').to.be.true
     if (error == null) throw new Error('missing error')
     const { code, message, stdout, stderr } = error
     expect(message).to.equal('Process exited with code 2')
@@ -157,10 +170,15 @@ describe('fork', function() {
   this.timeout(30000)
 
   it('resolves with process output', async () => {
+    let finallyDone = false
     const { stdout, stderr } = await fork(
       require.resolve('./resolvesWithProcessOutput'),
       { silent: true, maxBuffer: 200 * 1024 }
-    )
+    ).finally(async () => {
+      await delay(50)
+      finallyDone = true
+    })
+    expect(finallyDone, 'finally handler finished').to.be.true
     if (stdout == null || stderr == null) throw new Error('missing output')
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
@@ -198,11 +216,18 @@ describe('fork', function() {
     expect(stderr).to.equal('world')
   })
   it('rejects with exit code', async () => {
+    let finallyDone = false
     let error
     await fork(require.resolve('./rejectsWithExitCode'), {
       silent: true,
       maxBuffer: 200 * 1024,
-    }).catch(err => (error = err))
+    })
+      .finally(async () => {
+        await delay(50)
+        finallyDone = true
+      })
+      .catch(err => (error = err))
+    expect(finallyDone, 'finally handler finished').to.be.true
     if (error == null) throw new Error('missing error')
     const { code, message, stdout, stderr } = error
     expect(message).to.equal('Process exited with code 2')
