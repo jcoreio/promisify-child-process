@@ -64,7 +64,8 @@ export function promisifyChildProcess(
     ) => {
       const { encoding, killSignal } = options
       const captureStdio = encoding != null || options.maxBuffer != null
-      const maxBuffer = options.maxBuffer || 200 * 1024
+      const maxBuffer =
+        options.maxBuffer != null ? options.maxBuffer : 200 * 1024
 
       let error: ?ErrorWithOutput
       let bufferSize = 0
@@ -73,14 +74,15 @@ export function promisifyChildProcess(
       const capture = (chunks: Array<string | Buffer>) => (
         data: string | Buffer
       ) => {
-        const remaining = maxBuffer - bufferSize
-        if (data.length > remaining) {
+        const remaining = Math.max(0, maxBuffer - bufferSize)
+        const byteLength = Buffer.byteLength(data, 'utf8')
+        bufferSize += Math.min(remaining, byteLength)
+        if (byteLength > remaining) {
           error = new Error(`maxBuffer size exceeded`)
           // $FlowFixMe
           child.kill(killSignal ? killSignal : 'SIGTERM')
           data = data.slice(0, remaining)
         }
-        bufferSize += data.length
         chunks.push(data)
       }
       if (captureStdio) {
@@ -102,37 +104,24 @@ export function promisifyChildProcess(
             obj.stdout = joinChunks(stdoutChunks, encoding)
             obj.stderr = joinChunks(stderrChunks, encoding)
           } else {
-            /* eslint-disable no-console */
-            Object.defineProperties(
-              obj,
-              ({
-                stdout: {
-                  configurable: true,
-                  enumerable: true,
-                  get(): any {
-                    console.error(
-                      new Error(
-                        `To get stdout from a spawned or forked process, set the \`encoding\` or \`maxBuffer\` option`
-                      ).stack.replace(/^Error/, 'Warning')
-                    )
-                    return null
-                  },
-                },
-                stderr: {
-                  configurable: true,
-                  enumerable: true,
-                  get(): any {
-                    console.error(
-                      new Error(
-                        `To get stderr from a spawned or forked process, set the \`encoding\` or \`maxBuffer\` option`
-                      ).stack.replace(/^Error/, 'Warning')
-                    )
-                    return null
-                  },
-                },
-              }: any)
-            )
-            /* eslint-enable no-console */
+            const warn = (prop: 'stdout' | 'stderr') => ({
+              configurable: true,
+              enumerable: true,
+              get(): any {
+                /* eslint-disable no-console */
+                console.error(
+                  new Error(
+                    `To get ${prop} from a spawned or forked process, set the \`encoding\` or \`maxBuffer\` option`
+                  ).stack.replace(/^Error/, 'Warning')
+                )
+                /* eslint-enable no-console */
+                return null
+              },
+            })
+            Object.defineProperties(obj, {
+              stdout: warn('stdout'),
+              stderr: warn('stderr'),
+            })
           }
         }
         const output: ChildProcessOutput = ({}: any)
