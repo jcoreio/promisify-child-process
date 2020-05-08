@@ -6,29 +6,26 @@ import {
   ForkOptions,
 } from 'child_process'
 
-interface Output {
+export interface Output {
   stdout?: string | Buffer | null | undefined
   stderr?: string | Buffer | null | undefined
+  code?: number | null
+  signal?: string | null
 }
 
-interface ExitReason {
-  code?: number
-  signal?: string
-}
+export type ErrorWithOutput = Error & Output
 
-type ErrorWithOutput = Error & Output & ExitReason
+export type ChildProcessPromise = ChildProcess & Promise<Output>
 
-type ChildProcessPromise = ChildProcess & Promise<Output>
-
-interface PromisifyChildProcessOptions {
+export interface PromisifyChildProcessOptions {
   encoding?: string
   killSignal?: string
   maxBuffer?: number
 }
 
-type PromisifySpawnOptions = SpawnOptions & PromisifyChildProcessOptions
+export type PromisifySpawnOptions = SpawnOptions & PromisifyChildProcessOptions
 
-type PromisifyForkOptions = ForkOptions & PromisifyChildProcessOptions
+export type PromisifyForkOptions = ForkOptions & PromisifyChildProcessOptions
 
 export function promisifyChildProcess(
   child: ChildProcess,

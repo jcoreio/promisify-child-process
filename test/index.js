@@ -52,7 +52,7 @@ describe('spawn', function() {
 
   it('resolves with process output', async () => {
     let finallyDone = false
-    const { stdout, stderr } = await spawn(
+    const { code, signal, stdout, stderr } = await spawn(
       process.execPath,
       [require.resolve('./resolvesWithProcessOutput')],
       { maxBuffer: 200 * 1024 }
@@ -61,6 +61,8 @@ describe('spawn', function() {
       finallyDone = true
     })
     expect(finallyDone, 'finally handler finished').to.be.true
+    expect(code, 'code').to.equal(0)
+    expect(signal, 'signal').to.equal(null)
     if (stdout == null || stderr == null) throw new Error('missing output')
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
@@ -85,7 +87,11 @@ describe('spawn', function() {
       { maxBuffer: 1 }
     ).catch(err => (error = err))
     if (error == null) throw new Error('missing error')
-    const { stdout, stderr } = error
+    const { code, signal, stdout, stderr } = error
+    if (process.env.BABEL_ENV !== 'coverage')
+      expect(code, 'code').to.equal(null)
+    if (process.env.BABEL_ENV !== 'coverage')
+      expect(signal, 'signal').to.equal('SIGTERM')
     expect(stdout.toString('utf8')).to.equal('h')
     expect(stderr.toString('utf8')).to.equal('')
   })
@@ -112,9 +118,10 @@ describe('spawn', function() {
       .catch(err => (error = err))
     expect(finallyDone, 'finally handler finished').to.be.true
     if (error == null) throw new Error('missing error')
-    const { code, message, stdout, stderr } = error
+    const { code, signal, message, stdout, stderr } = error
     expect(message).to.equal('Process exited with code 2')
-    expect(code).to.equal(2)
+    expect(code, 'code').to.equal(2)
+    expect(signal, 'signal').to.equal(null)
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
     if (!(stderr instanceof Buffer))
@@ -145,9 +152,10 @@ describe('spawn', function() {
     })
     await child.catch(err => (error = err))
     if (error == null) throw new Error('missing error')
-    const { signal, message, stdout, stderr } = error
+    const { code, signal, message, stdout, stderr } = error
     expect(message).to.equal('Process was killed with SIGINT')
-    expect(signal).to.equal('SIGINT')
+    expect(code, 'code').to.equal(null)
+    expect(signal, 'signal').to.equal('SIGINT')
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
     if (!(stderr instanceof Buffer))
@@ -171,13 +179,15 @@ describe('fork', function() {
 
   it('resolves with process output', async () => {
     let finallyDone = false
-    const { stdout, stderr } = await fork(
+    const { code, signal, stdout, stderr } = await fork(
       require.resolve('./resolvesWithProcessOutput'),
       { silent: true, maxBuffer: 200 * 1024 }
     ).finally(async () => {
       await delay(50)
       finallyDone = true
     })
+    expect(code, 'code').to.equal(0)
+    expect(signal, 'signal').to.equal(null)
     expect(finallyDone, 'finally handler finished').to.be.true
     if (stdout == null || stderr == null) throw new Error('missing output')
     if (!(stdout instanceof Buffer))
@@ -202,7 +212,11 @@ describe('fork', function() {
       maxBuffer: 1,
     }).catch(err => (error = err))
     if (error == null) throw new Error('missing error')
-    const { stdout, stderr } = error
+    const { code, signal, stdout, stderr } = error
+    if (process.env.BABEL_ENV !== 'coverage')
+      expect(code, 'code').to.equal(null)
+    if (process.env.BABEL_ENV !== 'coverage')
+      expect(signal, 'signal').to.equal('SIGTERM')
     expect(stdout.toString('utf8')).to.equal('h')
     expect(stderr.toString('utf8')).to.equal('')
   })
@@ -229,9 +243,10 @@ describe('fork', function() {
       .catch(err => (error = err))
     expect(finallyDone, 'finally handler finished').to.be.true
     if (error == null) throw new Error('missing error')
-    const { code, message, stdout, stderr } = error
+    const { code, signal, message, stdout, stderr } = error
     expect(message).to.equal('Process exited with code 2')
-    expect(code).to.equal(2)
+    expect(code, 'code').to.equal(2)
+    expect(signal, 'signal').to.equal(null)
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
     if (!(stderr instanceof Buffer))
@@ -259,9 +274,10 @@ describe('fork', function() {
     })
     await child.catch(err => (error = err))
     if (error == null) throw new Error('missing error')
-    const { signal, message, stdout, stderr } = error
+    const { code, signal, message, stdout, stderr } = error
     expect(message).to.equal('Process was killed with SIGINT')
-    expect(signal).to.equal('SIGINT')
+    expect(code, 'code').to.equal(null)
+    expect(signal, 'signal').to.equal('SIGINT')
     if (!(stdout instanceof Buffer))
       throw new Error('expected stdout to be a buffer')
     if (!(stderr instanceof Buffer))
@@ -281,10 +297,12 @@ describe('exec', function() {
   this.timeout(30000)
 
   it('resolves with process output', async () => {
-    const { stdout, stderr } = await exec(
+    const { code, signal, stdout, stderr } = await exec(
       `${process.execPath} ${require.resolve('./resolvesWithProcessOutput')}`
     )
     if (stdout == null || stderr == null) throw new Error('missing output')
+    expect(code, 'code').to.equal(0)
+    expect(signal, 'signal').to.equal(null)
     expect(stdout).to.equal('hello')
     expect(stderr).to.equal('world')
   })
@@ -294,8 +312,9 @@ describe('exec', function() {
       `${process.execPath} ${require.resolve('./rejectsWithExitCode')}`
     ).catch(err => (error = err))
     if (error == null) throw new Error('missing error')
-    const { code, stdout, stderr } = error
-    expect(code).to.equal(2)
+    const { code, signal, stdout, stderr } = error
+    expect(code, 'code').to.equal(2)
+    expect(signal, 'signal').to.equal(null)
     expect(stdout).to.equal('hello')
     expect(stderr).to.equal('world')
   })
@@ -318,8 +337,9 @@ describe('exec', function() {
     })
     await child.catch(err => (error = err))
     if (error == null) throw new Error('missing error')
-    const { signal, stdout, stderr } = error
-    expect(signal).to.equal('SIGINT')
+    const { code, signal, stdout, stderr } = error
+    expect(code, 'code').to.equal(null)
+    expect(signal, 'signal').to.equal('SIGINT')
     expect(stdout).to.equal('hello')
     expect(stderr).to.equal('world')
   })
@@ -329,10 +349,12 @@ describe('execFile', function() {
   this.timeout(30000)
 
   it('resolves with process output', async () => {
-    const { stdout, stderr } = await execFile(
+    const { code, signal, stdout, stderr } = await execFile(
       require.resolve('./resolvesWithProcessOutput')
     )
     if (stdout == null || stderr == null) throw new Error('missing output')
+    expect(code, 'code').to.equal(0)
+    expect(signal, 'signal').to.equal(null)
     expect(stdout).to.equal('hello')
     expect(stderr).to.equal('world')
   })
@@ -342,8 +364,9 @@ describe('execFile', function() {
       err => (error = err)
     )
     if (error == null) throw new Error('missing error')
-    const { code, stdout, stderr } = error
-    expect(code).to.equal(2)
+    const { code, signal, stdout, stderr } = error
+    expect(code, 'code').to.equal(2)
+    expect(signal, 'signal').to.equal(null)
     expect(stdout).to.equal('hello')
     expect(stderr).to.equal('world')
   })
@@ -364,8 +387,9 @@ describe('execFile', function() {
     })
     await child.catch(err => (error = err))
     if (error == null) throw new Error('missing error')
-    const { signal, stdout, stderr } = error
-    expect(signal).to.equal('SIGINT')
+    const { code, signal, stdout, stderr } = error
+    expect(code, 'code').to.equal(null)
+    expect(signal, 'signal').to.equal('SIGINT')
     expect(stdout).to.equal('hello')
     expect(stderr).to.equal('world')
   })

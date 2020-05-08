@@ -4,16 +4,18 @@ import type { ChildProcess } from 'child_process'
 const child_process = require('child_process')
 
 export type ChildProcessOutput = {
-  stdout: ?(string | Buffer),
-  stderr: ?(string | Buffer),
-}
-
-export type ErrorWithOutput = Error & {
   stdout?: ?(string | Buffer),
   stderr?: ?(string | Buffer),
-  code?: ?number,
-  signal?: ?string,
+  code?: number | null,
+  signal?: string | null,
 }
+
+export interface ExitReason {
+  code?: number | null;
+  signal?: string | null;
+}
+
+export type ErrorWithOutput = Error & ChildProcessOutput
 
 export type ChildProcessPromise = ChildProcess & Promise<ChildProcessOutput>
 
@@ -100,6 +102,8 @@ export function promisifyChildProcess(
           }
         }
         function defineOutputs(obj: Object) {
+          obj.code = code
+          obj.signal = signal
           if (captureStdio) {
             obj.stdout = joinChunks(stdoutChunks, encoding)
             obj.stderr = joinChunks(stderrChunks, encoding)
@@ -124,15 +128,13 @@ export function promisifyChildProcess(
             })
           }
         }
-        const output: ChildProcessOutput = ({}: any)
-        defineOutputs(output)
         const finalError: ?ErrorWithOutput = error
         if (finalError) {
-          finalError.code = code
-          finalError.signal = signal
           defineOutputs(finalError)
           reject(finalError)
         } else {
+          const output: ChildProcessOutput = ({}: any)
+          defineOutputs(output)
           resolve(output)
         }
       }
@@ -190,7 +192,7 @@ function promisifyExecMethod(method: any): any {
               err.stderr = stderr
               reject(err)
             } else {
-              resolve({ stdout, stderr })
+              resolve({ code: 0, signal: null, stdout, stderr })
             }
           }
         )
