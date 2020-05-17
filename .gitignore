@@ -3,7 +3,6 @@ coverage
 node_modules
 .eslintcache
 /*.js
-/*.mjs
 /*.cjs
 /*.js.flow
 /*.d.ts
