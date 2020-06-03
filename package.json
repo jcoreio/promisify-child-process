@@ -123,7 +123,7 @@
     "eslint-watch": "^4.0.2",
     "flow-bin": "^0.126.0",
     "flow-copy-source": "^2.0.2",
-    "flow-watch": "^1.1.4",
+    "flow-watch": "^2.0.0",
     "fs-extra": "^7.0.1",
     "husky": "^1.1.4",
     "istanbul": "^0.4.5",
