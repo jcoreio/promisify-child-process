@@ -112,7 +112,7 @@
     "@jedwards1211/eslint-config-flow": "^2.0.0",
     "@types/node": "^12.12.17",
     "babel-eslint": "^10.0.1",
-    "babel-plugin-istanbul": "^5.1.0",
+    "babel-plugin-istanbul": "^6.0.0",
     "chai": "^4.2.0",
     "codecov": "^3.1.0",
     "copy": "^0.3.2",
