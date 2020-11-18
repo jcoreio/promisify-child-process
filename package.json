@@ -133,7 +133,7 @@
     "prettier": "^1.15.2",
     "prettier-eslint": "^8.8.2",
     "rimraf": "^2.6.0",
-    "semantic-release": "^15.13.31",
+    "semantic-release": "^17.2.3",
     "typescript": "^3.7.3",
     "waait": "^1.0.5"
   },
