@@ -7,9 +7,11 @@
   },
   "main": "./index.cjs",
   "exports": {
+    "types": "./index.d.ts",
     "import": "./index.mjs",
     "require": "./index.cjs"
   },
+  "types": "./index.d.ts",
   "files": [
     "index.cjs",
     "index.mjs",
