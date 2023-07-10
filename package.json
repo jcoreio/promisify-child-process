@@ -6,9 +6,16 @@
     "node": ">=8"
   },
   "main": "./index.cjs",
+  "types": "./index.d.ts",
   "exports": {
-    "import": "./index.mjs",
-    "require": "./index.cjs"
+    "import": {
+      "types": "./index.d.ts",
+      "default": "./index.mjs"
+    },
+    "require": {
+      "types": "./index.d.ts",
+      "default": "./index.cjs"
+    }
   },
   "files": [
     "index.cjs",
