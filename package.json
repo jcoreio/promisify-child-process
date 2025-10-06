@@ -139,23 +139,6 @@
     "typescript": "^3.7.3",
     "waait": "^1.0.5"
   },
-  "dependencies": {},
-  "renovate": {
-    "extends": [
-      ":separateMajorReleases",
-      ":combinePatchMinorReleases",
-      ":ignoreUnstable",
-      ":prImmediately",
-      ":renovatePrefix",
-      ":updateNotScheduled",
-      ":preserveSemverRanges",
-      ":semanticPrefixFixDepsChoreOthers",
-      ":automergeDisabled",
-      "group:monorepos"
-    ],
-    "automerge": true,
-    "major": {
-      "automerge": false
-    }
-  }
+  "dependencies": {}
 }
+
