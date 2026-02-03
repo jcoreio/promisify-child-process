@@ -1,3 +1,6 @@
 rejectsWithExitCode.js
+rejectsWithExitCode.cjs
 rejectsWithSignal.js
+rejectsWithSignal.cjs
 resolvesWithProcessOutput.js
+resolvesWithProcessOutput.cjs

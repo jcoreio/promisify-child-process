@@ -1,38 +1,43 @@
-version: 2
+# created by @jcoreio/toolchain-circle
+
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@4.1.0
+
 jobs:
   build:
     docker:
-      - image: circleci/node:8
+      - image: cimg/node:20.10.0
 
     steps:
       - checkout
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - v1-yarn-packages-{{ checksum "yarn.lock" }}
-
       - run:
           name: Setup NPM Token
           command: |
-            yarn config set registry "https://registry.npmjs.org/"
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
-            echo "registry=https://registry.npmjs.org/" >> .npmrc
-
+            npm config set \
+              "//registry.npmjs.org/:_authToken=$NPM_TOKEN" \
+              "registry=https://registry.npmjs.org/"
+      - run:
+          name: Corepack enable
+          command: sudo corepack enable
       - run:
           name: Install Dependencies
-          command: yarn install --frozen-lockfile
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: v1-yarn-packages-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/.cache/yarn
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Prepublish
+          command: |
+            [[ $(netstat -tnlp | grep -F 'circleci-agent') ]] || pnpm run tc prepublish
+      - codecov/upload
+      - run:
+          name: Release
+          command: |
+            [[ $(netstat -tnlp | grep -F 'circleci-agent') ]] || pnpm run tc release
 
-      - run:
-          name: build
-          command: yarn run prepublishOnly
-      - run:
-          name: upload test coverage
-          command: yarn codecov || true
-      - run:
-          name: release
-          command: yarn run semantic-release || true
+workflows:
+  build:
+    jobs:
+      - build:
+          context:
+            - npm-release
+            - github-release

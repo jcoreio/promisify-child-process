@@ -1,9 +1,6 @@
 {
-  "compilerOptions": {
-    "target": "es2015",
-    "module": "commonjs",
-    "strict": true,
-    "esModuleInterop": true,
-    "noEmit": true
-  }
+  "extends": "./node_modules/@jcoreio/toolchain-typescript/tsconfig.json",
+  "include": ["./src", "./test", "./*.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": { "module": "esnext", "moduleResolution": "bundler" }
 }

@@ -8,8 +8,11 @@
 
 seriously like the best async child process library
 
-(I'm joking, you may want to use [`execa`](https://github.com/sindresorhus/execa) which has a lot more features.  The minor advantages of this package are,
-it's a dual CJS/ESM package, and it provides wrappers for all the async `child_process` functions.)
+(I'm joking, you may want to use [`execa`](https://github.com/sindresorhus/execa) which has a lot more features. The minor advantages of this package are:)
+
+- it's a dual CJS/ESM package
+- it conforms to the `child_process` API
+- and it provides wrappers for all the async `child_process` functions
 
 Based upon [`child-process-async`](https://github.com/itsjustcon/node-child-process-async),
 but more thorough, because that package doesn't seem very actively maintained.
