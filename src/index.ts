@@ -1,6 +1,13 @@
-import { ChildProcess, StdioOptions } from 'child_process'
+import { ChildProcess, IOType } from 'child_process'
 import child_process from 'child_process'
-import { Pipe, Readable, Writable } from 'stream'
+import Stream, { Pipe, Readable, Writable } from 'stream'
+
+type StdioElement = IOType | Stream | number | null | undefined
+
+type StdioOptions =
+  | IOType
+  | [StdioElement, StdioElement, StdioElement, ...Array<StdioElement | 'ipc'>]
+  | Array<StdioElement | 'ipc'>
 
 interface IOOptions {
   silent?: boolean
@@ -181,6 +188,7 @@ export function promisifyChildProcess<
 }
 
 export interface SpawnOptions extends child_process.SpawnOptions {
+  stdio?: StdioOptions
   encoding?: BufferEncoding
   maxBuffer?: number
 }
@@ -214,6 +222,7 @@ export function spawn<Options extends SpawnOptions>(
 }
 
 export interface ForkOptions extends child_process.ForkOptions {
+  stdio?: StdioOptions
   encoding?: BufferEncoding
   maxBuffer?: number
 }

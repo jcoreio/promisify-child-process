@@ -537,4 +537,11 @@ function typeTests() {
       [Writable, null, Readable, Readable, null]
     >(true)
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const child = spawn('foo', { stdio: ['pipe', 'inherit', 'pipe', 'ipc'] })
+  assertEqual<(typeof child)['stdin'], Writable>(true)
+  assertEqual<(typeof child)['stdout'], null>(true)
+  assertEqual<(typeof child)['stderr'], Readable>(true)
+  assertEqual<(typeof child)['channel'], Pipe>(true)
 }
